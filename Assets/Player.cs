@@ -27,7 +27,7 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        
+
     }
 
     void Update()
@@ -35,14 +35,19 @@ public class Player : MonoBehaviour
         Vector2 pos = transform.position;
         float groundDistance = Mathf.Abs(pos.y - groundHeight);
 
-        if(isGrounded || groundDistance <= treshold)
+        if (isGrounded || groundDistance <= treshold)
         {
-            if(Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 isGrounded = false;
                 velocity.y = jumpVelocity;
                 isHoldingJump = true;
                 holdJumpTimer = 0;
+            }
+
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                isHoldingJump = false;
             }
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -67,17 +72,14 @@ public class Player : MonoBehaviour
     private void FixedUpdate()
     {
         Vector2 pos = transform.position;
-        distance += velocity.x * Time.fixedDeltaTime;
 
         if (isDead)
         {
+            velocity.x = 0;
             return;
         }
-
-        if (pos.y < -1)
-        {
-            isDead = true;
-        }
+ 
+        distance += velocity.x * Time.fixedDeltaTime;
 
         if (isHoldingJump)
         {
@@ -89,7 +91,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if(isHoldingSlide)
+        if (isHoldingSlide)
         {
             holdSlideTimer += Time.fixedDeltaTime;
 
@@ -116,6 +118,12 @@ public class Player : MonoBehaviour
             if (hit2D.collider != null)
             {
                 Ground ground = hit2D.collider.GetComponent<Ground>();
+                Edge edge = hit2D.collider.GetComponent<Edge>();
+
+                if (edge != null)
+                {
+                    isDead = true;
+                }
 
                 if (ground != null)
                 {
@@ -125,10 +133,7 @@ public class Player : MonoBehaviour
                 }
             }
 
-            Debug.DrawRay (rayOrigin, rayDirection * rayDistance, Color.red);
-
-            
-
+            Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.red);
         }
 
         if (isGrounded)
@@ -141,8 +146,8 @@ public class Player : MonoBehaviour
             acceleration = maxAcceleration * (1 - velocityRatio);
             holdJumpTime = maxHoldJumpTime * velocityRatio;
             velocity.x += acceleration * Time.fixedDeltaTime;
-            
-            if(isHoldingSlide)
+
+            if (isHoldingSlide)
             {
                 velocity.x += maxAcceleration;
             }
@@ -206,12 +211,12 @@ public class Player : MonoBehaviour
     void hitObstacle(Obstacle obst)
     {
         Destroy(obst.gameObject);
-        velocity.x *= 0.7f;
+        isDead = true;
     }
 
     void hitCoin(Coin coin)
     {
         Destroy(coin.gameObject);
-        coins ++;
+        coins++;
     }
 }

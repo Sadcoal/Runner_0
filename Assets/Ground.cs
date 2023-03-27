@@ -15,19 +15,23 @@ public class Ground : MonoBehaviour
     public Coin coinTemplate;
     public Obstacle obstacleTemplate;
 
+
     private void Awake()
     {
         player = GameObject.Find("Player").GetComponent<Player>();
+
         collider = GetComponent<BoxCollider2D>();
         groundHeight = transform.position.y + (collider.size.y / 2);
         screenRight = Camera.main.transform.position.x * 2;
     }
+
 
     void Start()
     {
 
     }
 
+    // Update is called once per frame
     void Update()
     {
 
@@ -71,7 +75,7 @@ public class Ground : MonoBehaviour
         float maxJumpHeight = h1 + h2;
         float maxY = maxJumpHeight * 0.7f;
         maxY += groundHeight;
-        float minY = 2;
+        float minY = 1;
         float actualY = Random.Range(minY, maxY);
 
         pos.y = actualY - goCollider.size.y / 2;
@@ -83,7 +87,7 @@ public class Ground : MonoBehaviour
         float totalTime = t1 + t2;
         float maxX = totalTime * player.velocity.x;
         maxX *= 0.7f;
-        maxX += groundRight - 1;
+        maxX += groundRight;
         float minX = screenRight + 5;
         float actualX = Random.Range(minX, maxX);
 
