@@ -24,6 +24,7 @@ public class Wall : MonoBehaviour
     private void FixedUpdate()
     {
         Vector2 pos = transform.position;
+        pos.y -= (player.velocity.x * Time.fixedDeltaTime) / 9;
         pos.x -= player.velocity.x * Time.fixedDeltaTime;
 
         if (pos.x < -100)

@@ -14,24 +14,21 @@ public class Ground : MonoBehaviour
     bool didGenerateGround = false;
     public Coin coinTemplate;
     public Obstacle obstacleTemplate;
-
+    public Wall wallTemplate;
 
     private void Awake()
     {
         player = GameObject.Find("Player").GetComponent<Player>();
-
         collider = GetComponent<BoxCollider2D>();
         groundHeight = transform.position.y + (collider.size.y / 2);
         screenRight = Camera.main.transform.position.x * 2;
     }
-
 
     void Start()
     {
 
     }
 
-    // Update is called once per frame
     void Update()
     {
 
@@ -41,8 +38,6 @@ public class Ground : MonoBehaviour
     {
         Vector2 pos = transform.position;
         pos.x -= player.velocity.x * Time.fixedDeltaTime;
-
-
         groundRight = transform.position.x + (collider.size.x / 2);
 
         if (groundRight < 0)
@@ -59,7 +54,6 @@ public class Ground : MonoBehaviour
                 generateGround();
             }
         }
-
         transform.position = pos;
     }
 
@@ -73,9 +67,9 @@ public class Ground : MonoBehaviour
         float t = player.jumpVelocity / -player.gravity;
         float h2 = player.jumpVelocity * t + (0.5f * (player.gravity * (t * t)));
         float maxJumpHeight = h1 + h2;
-        float maxY = maxJumpHeight * 0.7f;
+        float maxY = maxJumpHeight * 0.8f;
         maxY += groundHeight;
-        float minY = 1;
+        float minY = 2;
         float actualY = Random.Range(minY, maxY);
 
         pos.y = actualY - goCollider.size.y / 2;
@@ -87,30 +81,40 @@ public class Ground : MonoBehaviour
         float totalTime = t1 + t2;
         float maxX = totalTime * player.velocity.x;
         maxX *= 0.7f;
-        maxX += groundRight;
-        float minX = screenRight + 5;
+        maxX += groundRight - 7;
+        float minX = screenRight + 2;
         float actualX = Random.Range(minX, maxX);
 
         pos.x = actualX + goCollider.size.x / 2;
         go.transform.position = pos;
 
         Ground goGround = go.GetComponent<Ground>();
-        goGround.groundHeight = go.transform.position.y + (goCollider.size.y / 2);
+        goGround.groundHeight = go.transform.position.y + (goCollider.size.y);
 
         int obstacleNum = Random.Range(0, 3);
-        int coinNum = Random.Range(0, 2);
+        int coinNum = Random.Range(2, 3);
+        int wallNum = Random.Range(1, 3);
 
+        for (int i = 0; i < wallNum; i++)
+        {
+            float y = goGround.groundHeight + 30;
+            float width = goCollider.size.x / 2 - 1;
+            float left = go.transform.position.x - width + 7;
+            float right = go.transform.position.x + width - 7;
+            float x = Random.Range(left, right);
+            GameObject wall = Instantiate(wallTemplate.gameObject);
+            wall.transform.position = new Vector2(x, y);
+        }
         for (int i = 0; i < obstacleNum; i++)
         {
             float y = goGround.groundHeight;
             float width = goCollider.size.x / 2 - 1;
-            float left = go.transform.position.x - width;
-            float right = go.transform.position.x + width;
+            float left = go.transform.position.x - width + 10;
+            float right = go.transform.position.x + width - 10;
             float x = Random.Range(left, right);
             GameObject obst = Instantiate(obstacleTemplate.gameObject);
             obst.transform.position = new Vector2(x, y);
         }
-
         for (int i = 0; i < coinNum; i++)
         {
             float y = maxJumpHeight - Random.Range(3, 5);

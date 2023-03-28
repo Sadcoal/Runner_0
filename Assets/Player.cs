@@ -8,10 +8,11 @@ public class Player : MonoBehaviour
     public bool isHoldingJump = false;
     public bool isHoldingSlide = false;
     public bool isDead = false;
+    public bool ignoreHit = false;
     public Vector2 velocity;
     public float gravity = 400;
     public float distance = 0;
-    public float coins = 0;
+    public float coins = 5;
     public float maxXVelocity = 100;
     public float maxAcceleration = 10;
     public float acceleration = 10;
@@ -20,12 +21,11 @@ public class Player : MonoBehaviour
     public float holdJumpTime = 0.35f;
     public float maxHoldJumpTime = 0.4f;
     public float maxHoldSlideTime = 0.5f;
+    public float maxIgnoreHitTime = 2.5f;
+    public float ignoreHitTimer = 0.0f;
     public float holdJumpTimer = 0.0f;
     public float holdSlideTimer = 0.0f;
-    public float treshold = 2;
-    public static int score1;
-    public static int score2;
-    public static int score3;
+    public float treshold = 1;
 
     void Start()
     {
@@ -45,34 +45,47 @@ public class Player : MonoBehaviour
                 velocity.y = jumpVelocity;
                 isHoldingJump = true;
                 holdJumpTimer = 0;
+                if (Input.GetKeyUp(KeyCode.Space))
+                {
+                    isHoldingJump = false;
+                }
             }
 
-            if (Input.GetKeyUp(KeyCode.Space))
-            {
-                isHoldingJump = false;
-            }
-
-            if (Input.GetKeyDown(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift))
             {
                 isHoldingSlide = true;
                 holdSlideTimer = 0;
             }
         }
-
         else if (Input.GetKeyDown(KeyCode.Space))
         {
             isHoldingJump = false;
         }
-
         else
         {
             isHoldingSlide = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.CapsLock) && coins >= 5)
+        {
+            ignoreHit = true;
+            coins -= 5;
+            ignoreHitTimer = 0;
         }
     }
 
     private void FixedUpdate()
     {
         Vector2 pos = transform.position;
+
+        if (ignoreHit)
+        {
+            ignoreHitTimer += Time.fixedDeltaTime;
+            if (ignoreHitTimer >= maxIgnoreHitTime)
+            {
+                ignoreHit = false;
+            }
+        }
 
         if (isDead)
         {
@@ -107,7 +120,7 @@ public class Player : MonoBehaviour
         {
             float rayDistance = velocity.y * Time.fixedDeltaTime;
             pos.y += velocity.y * Time.fixedDeltaTime;
-            Vector2 rayOrigin = new Vector2(pos.x + 0.3f, pos.y);
+            Vector2 rayOrigin = new Vector2(pos.x + 0.5f, pos.y);
             Vector2 rayDirection = Vector2.up;
             RaycastHit2D hit2D = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance);
 
@@ -120,10 +133,17 @@ public class Player : MonoBehaviour
             {
                 Ground ground = hit2D.collider.GetComponent<Ground>();
                 Edge edge = hit2D.collider.GetComponent<Edge>();
+                Wall wall = hit2D.collider.GetComponent<Wall>();
+                Coin coin = hit2D.collider.GetComponent<Coin>();
 
-                if (edge != null)
+                if (edge != null || wall != null)
                 {
                     isDead = true;
+                }
+
+                if (coin != null)
+                {
+                    hitCoin(coin);
                 }
 
                 if (ground != null)
@@ -132,6 +152,7 @@ public class Player : MonoBehaviour
                     pos.y = groundHeight;
                     isGrounded = true;
                 }
+
             }
 
             Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.red);
@@ -141,7 +162,7 @@ public class Player : MonoBehaviour
         {
             float velocityRatio = velocity.x / maxXVelocity;
             float rayDistance = velocity.y * Time.fixedDeltaTime;
-            Vector2 rayOrigin = new Vector2(pos.x - 0.3f, pos.y);
+            Vector2 rayOrigin = new Vector2(pos.x - 0.5f, pos.y);
             Vector2 rayDirection = Vector2.up;
             RaycastHit2D hit2D = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance);
             acceleration = maxAcceleration * (1 - velocityRatio);
@@ -150,7 +171,7 @@ public class Player : MonoBehaviour
 
             if (isHoldingSlide)
             {
-                velocity.x += maxAcceleration;
+                velocity.x += 75;
             }
 
             if (velocity.x >= maxXVelocity)
@@ -166,15 +187,20 @@ public class Player : MonoBehaviour
             Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.yellow);
         }
 
-        Vector2 obstRayOrigin = new Vector2(pos.x, pos.y);
-        Vector2 coinRayOrigin = new Vector2(pos.x, pos.y);
-        RaycastHit2D obstForwardHit = Physics2D.Raycast(obstRayOrigin, Vector2.right, velocity.x * Time.fixedDeltaTime);
-        RaycastHit2D coinForwardHit = Physics2D.Raycast(coinRayOrigin, Vector2.right, velocity.x * Time.fixedDeltaTime);
+        Vector2 rayOrigin2 = new Vector2(pos.x, pos.y);
 
-        if (obstForwardHit.collider != null || coinForwardHit.collider != null)
+        RaycastHit2D forwardHit = Physics2D.Raycast(rayOrigin2, Vector2.right, velocity.x * Time.fixedDeltaTime);
+        
+        if (forwardHit.collider != null)
         {
-            Obstacle obstacle = obstForwardHit.collider.GetComponent<Obstacle>();
-            Coin coin = coinForwardHit.collider.GetComponent<Coin>();
+            Obstacle obstacle = forwardHit.collider.GetComponent<Obstacle>();
+            Coin coin = forwardHit.collider.GetComponent<Coin>();
+            Wall wall = forwardHit.collider.GetComponent<Wall>();
+
+            if (wall != null)
+            {
+                hitWall(wall);
+            }
 
             if (obstacle != null)
             {
@@ -185,15 +211,15 @@ public class Player : MonoBehaviour
             {
                 hitCoin(coin);
             }
+
         }
 
-        RaycastHit2D obstDownHit = Physics2D.Raycast(obstRayOrigin, Vector2.up, velocity.y * Time.fixedDeltaTime);
-        RaycastHit2D coinDownHit = Physics2D.Raycast(coinRayOrigin, Vector2.up, velocity.y * Time.fixedDeltaTime);
-
-        if (obstDownHit.collider != null || coinDownHit.collider != null)
+        RaycastHit2D downHit = Physics2D.Raycast(rayOrigin2, Vector2.up, velocity.y * Time.fixedDeltaTime);
+       
+        if (downHit.collider != null)
         {
-            Obstacle obstacle = obstDownHit.collider.GetComponent<Obstacle>();
-            Coin coin = coinDownHit.collider.GetComponent<Coin>();
+            Obstacle obstacle = downHit.collider.GetComponent<Obstacle>();
+            Coin coin = downHit.collider.GetComponent<Coin>();
 
             if (obstacle != null)
             {
@@ -209,10 +235,32 @@ public class Player : MonoBehaviour
         transform.position = pos;
     }
 
+    void hitWall(Wall wall)
+    {
+        if (!ignoreHit)
+        {
+            Destroy(wall.gameObject);
+            isDead = true;
+        }
+        else
+        {
+            Destroy(wall.gameObject);
+            isDead = false;
+        }
+    }
+
     void hitObstacle(Obstacle obst)
     {
-        Destroy(obst.gameObject);
-        isDead = true;
+        if (!ignoreHit)
+        {
+            Destroy(obst.gameObject);
+            isDead = true;
+        }
+        else
+        {
+            Destroy(obst.gameObject);
+            isDead = false;
+        }
     }
 
     void hitCoin(Coin coin)
