@@ -16,7 +16,6 @@ public class Player : MonoBehaviour
     public float maxAcceleration = 10;
     public float acceleration = 10;
     public float jumpVelocity = 20;
-    //private float slideVelocity;
     public float groundHeight = 10;
     public float holdJumpTime = 0.35f;
     public float maxHoldJumpTime = 0.4f;
@@ -24,6 +23,9 @@ public class Player : MonoBehaviour
     public float holdJumpTimer = 0.0f;
     public float holdSlideTimer = 0.0f;
     public float treshold = 2;
+    public static int score1;
+    public static int score2;
+    public static int score3;
 
     void Start()
     {
@@ -52,7 +54,6 @@ public class Player : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
-                //slideVelocity = velocity.x;
                 isHoldingSlide = true;
                 holdSlideTimer = 0;
             }

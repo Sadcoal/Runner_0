@@ -6,13 +6,11 @@ using UnityEngine.SceneManagement;
 
 public class UIControllerTitle : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
-    // Update is called once per frame
     void Update()
     {
         
@@ -20,19 +18,16 @@ public class UIControllerTitle : MonoBehaviour
 
     public void Play()
     {
-        Debug.Log("Play");
         SceneManager.LoadScene("SampleScene");
     }
 
     public void Records()
     {
-        Debug.Log("Records");
-        SceneManager.LoadScene("Table");
+        SceneManager.LoadScene("Records");
     }
 
     public void Quit()
     {
-        Debug.Log("Quit");
-        Application.Quit();
+        SceneManager.LoadScene("Exit");
     }
 }

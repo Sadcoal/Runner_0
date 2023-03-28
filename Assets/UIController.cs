@@ -25,13 +25,11 @@ public class UIController : MonoBehaviour
         results.SetActive(false);
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
-    // Update is called once per frame
     void Update()
     {
         int distance = Mathf.FloorToInt(player.distance);
@@ -40,16 +38,24 @@ public class UIController : MonoBehaviour
         distanceText.text = "count: " + distance;
         coinsText.text = "coins: " + coins;
         scoreText.text = "SCORE: " + score;
-        highscoreText.text = "HIGHSCORE: " + PlayerPrefs.GetInt("Highscore");
-
-        if (PlayerPrefs.GetInt("Highscore") <= score)
-        {
-            PlayerPrefs.SetInt("Highscore",score);
-        }
+        highscoreText.text = "HIGHSCORE: " + PlayerPrefs.GetInt("highscore");
 
         if (player.isDead)
         {
             results.SetActive(true);
+
+            if (PlayerPrefs.GetInt("highscore") <= score)
+            {
+                PlayerPrefs.SetInt("highscore", score);
+            }
+            if (PlayerPrefs.GetInt("highscore") > score && PlayerPrefs.GetInt("scr2") <= score)
+            {
+                PlayerPrefs.SetInt("scr2", score);
+            }
+            if (PlayerPrefs.GetInt("highscore") > score && PlayerPrefs.GetInt("scr2") > score && PlayerPrefs.GetInt("scr3") <= score)
+            {
+                PlayerPrefs.SetInt("scr3", score);
+            }
         }
     }
 

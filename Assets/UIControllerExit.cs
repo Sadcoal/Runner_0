@@ -4,12 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class UIControllerTable : MonoBehaviour
+public class UIControllerExit : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Records");
+
     }
 
     // Update is called once per frame
@@ -18,9 +18,14 @@ public class UIControllerTable : MonoBehaviour
         
     }
 
-    public void Menu()
+    public void Cancel()
     {
-        Debug.Log("Menu");
         SceneManager.LoadScene("Menu");
+    }
+
+    public void Confirm()
+    {
+        Debug.Log("Confirm");
+        Application.Quit();
     }
 }
